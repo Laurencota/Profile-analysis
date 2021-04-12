@@ -1,0 +1,160 @@
+---
+title: "Análise de perfil de cartões de crédito"
+author: "Lauren Cota"
+date: "7/02/2021"
+output:
+  html_document: default
+
+---
+\
+\
+\
+**Abrindo o banco de dados** 
+
+Banco de dados sobre um banco e seus 4 tipos de cartões, e variavéis demográficas dos clientes(como idade, sexo, estado civil, escolaridade), obtida através do kaggle.  
+
+```{r}
+
+dados <- read.table("Cópia de BankChurners(1522).csv",dec=".",sep=";",header=T)
+```
+
+**Pacotes que serão utilizados**
+
+```{r}
+library(dplyr)
+
+library(ggplot2)
+
+```
+
+**Separação dos dados para cada tipo de cartão**
+
+Para facilitar a análise dos cartões iremos criar um banco de dados para cada tipo de cartão, isso foi feito utilizando o pacote dplyr.
+
+```{r}
+Cartão_Blue <- filter(dados, Card_Category == "Blue" )
+
+Cartão_Silver <- filter(dados, Card_Category == "Silver" )
+
+Cartão_Gold <- filter(dados, Card_Category == "Gold" )
+
+Cartão_Platinum <- filter(dados, Card_Category == "Platinum" )
+```
+
+**Verficação de quantas pessoas há em cada cartão**
+
+```{r}
+table(dados$Card_Category)
+
+```
+
+
+```{r,include=FALSE}
+taxa <- (dados$Avg_Utilization_Ratio/1000)
+Limite <- (dados$Credit_Limit)
+Transação <- (dados$Total_Trans_Ct)
+Idade <- (dados$Customer_Age)
+desistir <- (dados$Attrition_Flag)
+```
+
+**Caracterização do cliente para cada tipo de cartão**
+
+Primeiro fazermos um box-plot, utilizando sexo, idade e estado civil para cada tipo de cartão
+
+**Blue**
+
+```{r}
+ggplot(Cartão_Blue, aes( x= Gender,y=Customer_Age,fill=Marital_Status)) + 
+  geom_boxplot()
+```
+
+**Gold**
+
+```{r}
+ggplot(Cartão_Gold, aes( X= Gender, y=Customer_Age,fill=Marital_Status)) + 
+  geom_boxplot()
+```
+
+**Platinum**
+
+```{r}
+ggplot(Cartão_Platinum, aes( x = Gender, y=Customer_Age,fill=Marital_Status)) + 
+  geom_boxplot()
+```
+
+**Silver**
+
+```{r}
+ggplot(Cartão_Silver, aes( x = Gender,y=Customer_Age,fill=Marital_Status)) + 
+  geom_boxplot()
+```
+
+
+
+## Conclusões
+
+
+Temos como conclusões que o cartão Blue, é bem constante para os clientes masculinos e femininos, e não aparenta diferenças entres os dois grupos, e a idade também é estável. 
+
+No cartão Gold, já notamos algumas diferenças entre os clientes masculinos e femininos, principalmente entre os divorciados, o clientes mac=sculinos divorciados, aparentam ter uma idade mais avançada, enquanto as mulheres divorciadas são mais jovens.
+
+No cartão Platinum, o número de pessoas que possuem o cartão é pequeno, em relação aos outros cartões, porém podemos notar que a maioria dos clientes é solteiro.
+
+No Cartão silver, não notamos tanta diferença assim como o cartão Blue, porém podemos perceber que há bastante pessoas solteiras, tanto homens, quanto mulheres.
+
+## Análise de Regressão
+
+Também podemos fazer uma análise de regressão para verificarmos se a idade da pessoa influencia no limite de crédito que há pessoa tem no banco.
+
+Para isso iremos criar um modelo utilizando a variável idade e limite de crédito:
+
+```{r}
+lmod1 = lm(Credit_Limit ~ Customer_Age,dados)
+plot(Credit_Limit~Customer_Age,dados)
+summary(lmod1)
+```
+
+**Idade não influencia** 
+
+Através do p-valor muito alto e o plot, temos como conclusão que o limite de crédito da pessoa no banco, não é interferido pela sua idade. 
+
+
+## Correlação de Pearson
+
+Por último podemos fazer uma correlação de Pearson entre Limite e idade, entre idade e taxa de utilização do cartão de crédito, e também entre Limite e taxa de utilização:
+
+```{r}
+cor (Idade,taxa)
+cor(Idade,Limite)
+cor(Limite,taxa)
+```
+
+Notamos que entre Idade e taxa de utilização e entre Idade e Limite, não há correlação linear.
+
+Porém entre Limite e taxa encontramos uma correlação negativa, iremos fazer um plot, para maior visualização:
+
+```{r}
+plot(Limite,taxa)
+```
+
+Através do valor da correlação e do gráfico, notamos que as pessoas que mais utilizam o cartão são as pessoas que possuem o menor limite de crédito.
+
+## Abaixo podemos observar cada tipo de cartão e a escolaridade dos clientes
+
+```{r}
+table(Cartão_Blue$Education_Level)
+table(Cartão_Gold$Education_Level)
+table(Cartão_Platinum$Education_Level)
+table(Cartão_Silver$Education_Level)
+```
+
+
+A maioria dos clientes Blue, não possuem escolaridade. E no Gold, Platinum e Silver, a maioria são graduados.
+
+## Considerações finais
+
+Percebemos que o cartão Blue possui grande maioria dos clientes, enquanto o Platinum, possui pouquissímos clientes. 
+
+A idade não interfere no limite de crédito que a pessoa possui, e também não interfere na utilização do cartão de crédito.
+
+
